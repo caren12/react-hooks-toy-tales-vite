@@ -7,58 +7,72 @@ function App() {
   const [showForm, setShowForm] = useState(false);
   const [toys, setToys] = useState([]);
 
+  // Toggle form
   function handleClick() {
     setShowForm((prev) => !prev);
   }
 
-  // FETCH toys on load
+  // GET toys
   useEffect(() => {
     fetch("http://localhost:3000/toys")
       .then((res) => res.json())
       .then((data) => setToys(data));
   }, []);
 
-  // CREATE toy
-  const addToy = (newToy) => {
+  // POST toy
+  function addToy(newToy) {
     fetch("http://localhost:3000/toys", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...newToy, likes: 0 }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...newToy,
+        likes: 0,
+      }),
     })
       .then((res) => res.json())
-      .then((data) => setToys([...toys, data]));
-  };
+      .then((toy) => {
+        setToys([...toys, toy]);
+      });
+  }
 
   // DELETE toy
-  const deleteToy = (id) => {
+  function deleteToy(id) {
     fetch(`http://localhost:3000/toys/${id}`, {
       method: "DELETE",
     }).then(() => {
-      setToys(toys.filter((toy) => toy.id !== id));
+      const updatedToys = toys.filter((toy) => toy.id !== id);
+      setToys(updatedToys);
     });
-  };
+  }
 
-  // LIKE toy (PATCH)
-  const likeToy = (toy) => {
+  // PATCH likes
+  function likeToy(toy) {
     fetch(`http://localhost:3000/toys/${toy.id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ likes: toy.likes + 1 }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        likes: toy.likes + 1,
+      }),
     })
       .then((res) => res.json())
       .then((updatedToy) => {
         const updatedToys = toys.map((t) =>
           t.id === updatedToy.id ? updatedToy : t
         );
+
         setToys(updatedToys);
       });
-  };
+  }
 
   return (
     <>
       <Header />
 
-      {showForm && <ToyForm addToy={addToy} />}
+      {showForm ? <ToyForm addToy={addToy} /> : null}
 
       <div className="buttonContainer">
         <button onClick={handleClick}>Add a Toy</button>
